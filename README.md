@@ -1,2 +1,12 @@
-# appstatus
+# AppStatus
 Python module and scripts for using the StatusAPI enabled applications to mange deployments and releases.
+
+This is related to the [AppStatus API](https://github.com/sdcote/status-api) showing developers how to perform Blue-Green, Canary and Rolling deployments by managing the values returned by the `/appstatus` endpoint.
+
+The basic mechanics involve an F5 (BIG-IP) switch monitoring an application endpoint for the availability of an application to receive requests. One virtual host, for example, will ony send requests to an application if the `/appstatus` endpoint returns a status of `ready`. Any other return value will prevent it from receiving requests. This allows a pool of application instances to communicate with the F5, directing it to route requests to a subset of instances. If there are 8 application instances and only 4 of them return a `ready` state, then only those 4 will receive traffic.  The other 4 can be used for QA testing or simply down for other operational (maintenance) activities.
+
+## Rolling Deployment
+
+In a real world use case, 4 application instances are in a `ready` state and the other 4 instances are in a `state` state. Two virtual hosts are defined in the F5, one routing requests to only the instances in a `ready` state and the other virtual host routing requests to hosts returning a `state` state.  This give users a set of "production" instances, those in the `ready` state and the developers a set of QA instances, those in the `stage` state.  Developers can continually deploy the latest version of their product to the "staging" instances where final UAT and QA testing is performed. When it comes time to release the new version, a `stage` instance is directed to return `ready` as its application state and start receiving production traffic. It is goes well, a `ready` instance can be set to `stand-by` so it no longer receives any traffic. All `stage` instances are eventually transitioned to the `ready` status and all `ready` instances are transitioned to the `stand-by` status in pairs.  This results in a rolling deployment with no outage to the application.
+
+If any problems are encountered, all `stand-by` instances can be transitioned back to `ready` (with the corresponding `ready` instances transitioned back to `stage`) resulting in a "roll-back" to the original version of the application. Again, as a rolling operation, no outages are experienced.     
