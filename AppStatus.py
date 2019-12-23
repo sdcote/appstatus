@@ -9,21 +9,28 @@ class Plan:
 
     def __init__(self, filename):
         self.filename = filename
-        self.data = None
         self.nodes = []
+        self.usernm = None
+        self.passwd = None
         self.read()
 
     def read(self, ):
         """Read in the JSON containing the nodes and their desired state"""
         with open(self.filename) as json_file:
-            self.data = json.load(json_file)
-        if self.data.has_key('nodes'):
-            nodes = self.data['nodes']
+            data = json.load(json_file)
+        if data.has_key('nodes'):
+            nodes = data['nodes']
             for n in nodes:
                 if n.has_key('host'):
                     node = self.add_node(n['host'])
                     if n.has_key('goal'):
                         node.set_goal(n['goal'])
+        if data.has_key('authentication'):
+            auth =  data['authentication']
+            if auth.has_key('username'):
+                self.usernm = auth['username']
+            if auth.has_key('password'):
+                self.passwd = auth['password']
 
     def add_node(self, host):
         node = Node(host)
