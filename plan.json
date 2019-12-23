@@ -4,19 +4,19 @@
   },
   "nodes": [
     {
-      "host": "selfserv20376.aepsc.com:7001",
+      "host": "selfserv20376:7001",
       "goal": "ready"
     },
     {
-      "host": "selfserv20377.aepsc.com:7001",
+      "host": "selfserv20377:7001",
       "goal": "stage"
     },
     {
-      "host": "selfserv20378.aepsc.com:7001",
+      "host": "selfserv20378:7001",
       "goal": "stand-by"
     }
   ],
-  "authentecation": {
+  "authentication": {
     "username": "devop",
     "password": "secret"
   }
