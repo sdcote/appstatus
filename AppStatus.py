@@ -1,4 +1,7 @@
 # This is a collection of functions to help manage application status through the AppStatus API.
+# python -m pip install requests
+import json
+import requests
 
 
 class Plan:
@@ -6,11 +9,26 @@ class Plan:
 
     def __init__(self, filename):
         self.filename = filename
-        self.read(filename)
+        self.data = None
+        self.nodes = []
+        self.read()
 
-    def read(self, filename):
+    def read(self, ):
         """Read in the JSON containing the nodes and their desired state"""
-        pass
+        with open(self.filename) as json_file:
+            self.data = json.load(json_file)
+        if self.data.has_key('nodes'):
+            nodes = self.data['nodes']
+            for n in nodes:
+                if n.has_key('host'):
+                    node = self.add_node(n['host'])
+                    if n.has_key('goal'):
+                        node.set_goal(n['goal'])
+
+    def add_node(self, host):
+        node = Node(host)
+        self.nodes.append(node)
+        return node
 
     def write(self, filename):
         pass
@@ -22,7 +40,17 @@ class Plan:
         pass
 
     def show_current(self):
-        pass
+        for n in self.nodes:
+            line = "NODE:"
+            line = line + n.get_name()
+            n.check()
+            line = line + " STATUS:"
+            line = line + n.get_status()
+            line = line + " VERSION:"
+            line = line + n.get_version()
+            line = line + " GOAL:"
+            line = line + n.get_goal()
+            print line
 
     def roll_forward(self):
         pass
@@ -39,11 +67,17 @@ class Node:
 
     def __init__(self, name):
         self.name = name
-        self.state = "unknown"
+        self.status = "unknown"
         self.version = "unknown"
+        self.goal = "unknown"
 
     def check(self):
-        pass
+        url = "http://" + self.name + "/appstatus"
+        r = requests.get(url)
+        data = r.json()
+        self.status = data['status']
+        if data.has_key('version'):
+            self.version = data['version']
 
     def set_to_ready(self):
         pass
@@ -54,11 +88,20 @@ class Node:
     def set_to_standby(self):
         pass
 
-    def get_state(self):
-        pass
+    def get_name(self):
+        return self.name
+
+    def get_status(self):
+        return self.status
 
     def get_version(self):
-        pass
+        return self.version
+
+    def get_goal(self):
+        return self.goal
+
+    def set_goal(self, status):
+        self.goal = status
 
     def roll_forward(self):
         pass
@@ -68,4 +111,3 @@ class Node:
 
     def commit(self):
         pass
-
