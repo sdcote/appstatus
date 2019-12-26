@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 import argparse
+
 from AppStatus import Node
 
 parser = argparse.ArgumentParser(description='Modify the AppStatus of a deployment node')
@@ -6,7 +8,6 @@ parser.add_argument("host", nargs='?', help="the host:port of the application in
 parser.add_argument("status", nargs='?', help="the status to be set")
 parser.add_argument("-u", "--username", help="Username credential")
 parser.add_argument("-p", "--password", help="Password credential")
-
 args = parser.parse_args()
 
 
