@@ -1,7 +1,7 @@
 import argparse
 from AppStatus import Plan
 
-parser = argparse.ArgumentParser(description='Modify the AppStatus of deploument nodes')
+parser = argparse.ArgumentParser(description='Modify the AppStatus of deployment nodes')
 parser.add_argument("action", nargs='*', default="status", choices=["forward", "rollback", "commit", "single", "rolling", "goal", "status"], help="the type of action to take (default = status)")
 parser.add_argument("-v", "--verbose", action="store_true", default=False, help="verbose output")
 parser.add_argument("-f", "--file", help="file name for the plan (default = plan.json)")
