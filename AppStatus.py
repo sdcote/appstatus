@@ -1,6 +1,8 @@
 # This is a collection of functions to help manage application status through the AppStatus API.
 # python -m pip install requests
 import json
+import sys
+
 import requests
 
 
@@ -83,14 +85,28 @@ class Node:
     def check(self):
         url = self.get_url()
         r = requests.get(url)
-        data = r.json()
-        self.status = data['status']
-        if data.has_key('version'):
-            self.version = data['version']
-        if data.has_key('appid'):
-            self.appid = data['appid']
-        if data.has_key('hostname'):
-            self.hostname = data['hostname']
+        try:
+            if r.status_code < 300:
+                data = r.json()
+                self.status = data['status']
+                if data.has_key('version'):
+                    self.version = data['version']
+                if data.has_key('appid'):
+                    self.appid = data['appid']
+                if data.has_key('hostname'):
+                    self.hostname = data['hostname']
+            else:
+                print ("Error retrieving status: ("+url+") " + str(r.status_code) + " - " + r.reason)
+        except requests.exceptions.Timeout:
+            print("The connection timed-out: "+url)
+        except requests.exceptions.TooManyRedirects:
+            print("The host does not seem to be valid: "+url)
+        except requests.exceptions.ConnectionError:
+            print("The host does not seem to be accepting requests: "+url)
+        except BaseException as e:
+            e = sys.exc_info()[0]
+            print("Fatal: " + e)
+            sys.exit(1)
 
     def set_to_ready(self):
         pass
@@ -142,4 +158,4 @@ class Node:
             print line
 
     def get_url(self):
-        return "http://" + self.name + "/appstatus"
+        return "http://" + self.name + "/api/appstatus"
