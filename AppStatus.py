@@ -26,7 +26,7 @@ class Plan:
                     if n.has_key('goal'):
                         node.set_goal(n['goal'])
         if data.has_key('authentication'):
-            auth =  data['authentication']
+            auth = data['authentication']
             if auth.has_key('username'):
                 self.usernm = auth['username']
             if auth.has_key('password'):
@@ -76,15 +76,21 @@ class Node:
         self.name = name
         self.status = "unknown"
         self.version = "unknown"
+        self.appid = "unknown"
+        self.hostname = "unknown"
         self.goal = "unknown"
 
     def check(self):
-        url = "http://" + self.name + "/appstatus"
+        url = self.get_url()
         r = requests.get(url)
         data = r.json()
         self.status = data['status']
         if data.has_key('version'):
             self.version = data['version']
+        if data.has_key('appid'):
+            self.appid = data['appid']
+        if data.has_key('hostname'):
+            self.hostname = data['hostname']
 
     def set_to_ready(self):
         pass
@@ -118,3 +124,22 @@ class Node:
 
     def commit(self):
         pass
+
+    def set_status(self, status, username, password):
+        endpoint = self.get_url()
+        payload = {'status': status}
+        r = requests.post(url=endpoint, json=payload, auth=(username, password))
+        if r.status_code < 300:
+            print r.json()
+        else:
+            # print("URL: " + endpoint)
+            # print("STATUS: " + status)
+            # print ("USERNAME: " + str(username))
+            # print ("PASSWORD: " + str(password))
+            line = str(r.status_code)
+            line = line + " - "
+            line = line + r.reason
+            print line
+
+    def get_url(self):
+        return "http://" + self.name + "/appstatus"
