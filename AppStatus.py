@@ -96,26 +96,29 @@ class Node:
                 if data.has_key('hostname'):
                     self.hostname = data['hostname']
             else:
-                print ("Error retrieving status: ("+url+") " + str(r.status_code) + " - " + r.reason)
+                print ("Error retrieving status: (" + url + ") " + str(r.status_code) + " - " + r.reason)
         except requests.exceptions.Timeout:
-            print("The connection timed-out: "+url)
+            print("The connection timed-out: " + url)
         except requests.exceptions.TooManyRedirects:
-            print("The host does not seem to be valid: "+url)
+            print("The host does not seem to be valid: " + url)
         except requests.exceptions.ConnectionError:
-            print("The host does not seem to be accepting requests: "+url)
+            print("The host does not seem to be accepting requests: " + url)
         except BaseException as e:
             e = sys.exc_info()[0]
             print("Fatal: " + e)
             sys.exit(1)
 
-    def set_to_ready(self):
-        pass
+    def set_goal_to_ready(self):
+        self.goal = 'ready'
 
-    def set_to_stage(self):
-        pass
+    def set_goal_to_stage(self):
+        self.goal = 'stage'
 
-    def set_to_standby(self):
-        pass
+    def set_goal_to_standby(self):
+        self.goal = 'stand-by'
+
+    def set_goal(self, username, password):
+        self.set_status(self.goal, username, password)
 
     def get_name(self):
         return self.name
@@ -132,14 +135,24 @@ class Node:
     def set_goal(self, status):
         self.goal = status
 
-    def roll_forward(self):
-        pass
+    def roll_forward(self, username, password):
+        self.check()
+        if self.status is 'ready':
+            self.set_status('stand-by', username, password)
+        elif self.status is 'stage':
+            self.set_status('ready', username, password)
 
-    def roll_back(self):
-        pass
+    def roll_back(self, username, password):
+        self.check()
+        if self.status is 'ready':
+            self.set_status('stage', username, password)
+        elif self.status is 'stand-by':
+            self.set_status('ready', username, password)
 
-    def commit(self):
-        pass
+    def commit(self, username, password):
+        self.check()
+        if self.status is 'stand-by':
+            self.set_status('stage', username, password)
 
     def set_status(self, status, username, password):
         endpoint = self.get_url()
