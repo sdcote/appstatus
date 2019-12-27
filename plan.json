@@ -1,6 +1,7 @@
 {
   "method": {
-    "type": "rolling"
+    "type": "rolling",
+    "pause": 60
   },
   "nodes": [
     {
