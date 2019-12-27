@@ -40,9 +40,11 @@ class Plan:
         return node
 
     def write(self, filename):
+        """Write the plan to disk"""
         pass
 
     def execute(self):
+        """Execute the plan changing the status of each node"""
         pass
 
     def show_desired(self):
@@ -57,8 +59,10 @@ class Plan:
             line = line + n.get_status()
             line = line + " VERSION:"
             line = line + n.get_version()
-            line = line + " GOAL:"
-            line = line + n.get_goal()
+            g = n.get_goal()
+            if g is not None:
+                line = line + " GOAL:"
+                line = line + g
             print line
 
     def roll_forward(self):
@@ -157,14 +161,14 @@ class Node:
     def set_status(self, status, username, password):
         endpoint = self.get_url()
         payload = {'status': status}
-        r = requests.post(url=endpoint, json=payload, auth=(username, password))
+        if username is not None:
+            r = requests.post(url=endpoint, json=payload, auth=(username, password))
+        else:
+            r = requests.post(url=endpoint, json=payload)
+
         if r.status_code < 300:
             print r.json()
         else:
-            # print("URL: " + endpoint)
-            # print("STATUS: " + status)
-            # print ("USERNAME: " + str(username))
-            # print ("PASSWORD: " + str(password))
             line = str(r.status_code)
             line = line + " - "
             line = line + r.reason
