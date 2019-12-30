@@ -2,7 +2,6 @@
 # python -m pip install requests
 import json
 import sys
-
 import requests
 
 
@@ -88,8 +87,8 @@ class Node:
 
     def check(self):
         url = self.get_url()
-        r = requests.get(url)
         try:
+            r = requests.get(url, verify=False)
             if r.status_code < 300:
                 data = r.json()
                 self.status = data['status']
@@ -103,13 +102,13 @@ class Node:
                 print ("Error retrieving status: (" + url + ") " + str(r.status_code) + " - " + r.reason)
         except requests.exceptions.Timeout:
             print("The connection timed-out: " + url)
-        except requests.exceptions.TooManyRedirects:
-            print("The host does not seem to be valid: " + url)
-        except requests.exceptions.ConnectionError:
-            print("The host does not seem to be accepting requests: " + url)
-        except BaseException as e:
+        except requests.exceptions.TooManyRedirects as e:
+            print("The host does not seem to be valid: " + url + " - " + e)
+        except requests.exceptions.ConnectionError as e:
+            print("The host does not seem to be accepting requests: " + url + " - " + str(e))
+        except Exception as e:
             e = sys.exc_info()[0]
-            print("Fatal: " + e)
+            print("Fatal: " + str(e))
             sys.exit(1)
 
     def set_goal_to_ready(self):
@@ -162,9 +161,9 @@ class Node:
         endpoint = self.get_url()
         payload = {'status': status}
         if username is not None:
-            r = requests.post(url=endpoint, json=payload, auth=(username, password))
+            r = requests.post(url=endpoint, json=payload, auth=(username, password), verify=False)
         else:
-            r = requests.post(url=endpoint, json=payload)
+            r = requests.post(url=endpoint, json=payload, verify=False)
 
         if r.status_code < 300:
             print r.json()
@@ -175,4 +174,10 @@ class Node:
             print line
 
     def get_url(self):
-        return "http://" + self.name + "/api/appstatus"
+        tokens = self.name.split(":");
+        retval = "http://" + self.name + "/api/appstatus"
+
+        if (len(tokens) == 2) and (tokens[1] == "443"):
+            retval = "https://" + tokens[0] + "/api/appstatus"
+
+        return retval
