@@ -2,6 +2,7 @@
 # python -m pip install requests
 import json
 import sys
+
 import requests
 
 
@@ -15,22 +16,22 @@ class Plan:
         self.passwd = None
         self.read()
 
-    def read(self, ):
+    def read(self):
         """Read in the JSON containing the nodes and their desired state"""
         with open(self.filename) as json_file:
             data = json.load(json_file)
-        if data.has_key('nodes'):
+        if 'nodes' in data:
             nodes = data['nodes']
             for n in nodes:
-                if n.has_key('host'):
+                if 'host' in n:
                     node = self.add_node(n['host'])
-                    if n.has_key('goal'):
+                    if 'goal' in n:
                         node.set_goal(n['goal'])
-        if data.has_key('authentication'):
+        if 'authentication' in data:
             auth = data['authentication']
-            if auth.has_key('username'):
+            if 'username' in auth:
                 self.usernm = auth['username']
-            if auth.has_key('password'):
+            if 'password' in auth:
                 self.passwd = auth['password']
 
     def add_node(self, host):
@@ -59,10 +60,9 @@ class Plan:
             line = line + " VERSION:"
             line = line + n.get_version()
             g = n.get_goal()
-            if g is not None:
-                line = line + " GOAL:"
-                line = line + g
-            print line
+            if g is not None and g > "": line = line + " GOAL:" + g
+
+            print(line)
 
     def roll_forward(self):
         pass
@@ -92,14 +92,14 @@ class Node:
             if r.status_code < 300:
                 data = r.json()
                 self.status = data['status']
-                if data.has_key('version'):
+                if 'version' in data:
                     self.version = data['version']
-                if data.has_key('appid'):
+                if 'appid' in data:
                     self.appid = data['appid']
-                if data.has_key('hostname'):
+                if 'hostname' in data:
                     self.hostname = data['hostname']
             else:
-                print ("Error retrieving status: (" + url + ") " + str(r.status_code) + " - " + r.reason)
+                print("Error retrieving status: (" + url + ") " + str(r.status_code) + " - " + r.reason)
         except requests.exceptions.Timeout:
             print("The connection timed-out: " + url)
         except requests.exceptions.TooManyRedirects as e:
@@ -140,21 +140,21 @@ class Node:
 
     def roll_forward(self, username, password):
         self.check()
-        if self.status is 'ready':
+        if self.status.equals('ready'):
             self.set_status('stand-by', username, password)
-        elif self.status is 'stage':
+        elif self.status.equals('stage'):
             self.set_status('ready', username, password)
 
     def roll_back(self, username, password):
         self.check()
-        if self.status is 'ready':
+        if self.status.equals('ready'):
             self.set_status('stage', username, password)
-        elif self.status is 'stand-by':
+        elif self.status.equals('stand-by'):
             self.set_status('ready', username, password)
 
     def commit(self, username, password):
         self.check()
-        if self.status is 'stand-by':
+        if self.status.equals('stand-by'):
             self.set_status('stage', username, password)
 
     def set_status(self, status, username, password):
@@ -166,12 +166,12 @@ class Node:
             r = requests.post(url=endpoint, json=payload, verify=False)
 
         if r.status_code < 300:
-            print r.json()
+            print(r.json())
         else:
             line = str(r.status_code)
             line = line + " - "
             line = line + r.reason
-            print line
+            print(line)
 
     def get_url(self):
         tokens = self.name.split(":");
