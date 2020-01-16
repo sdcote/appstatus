@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 import argparse
 
+# Suppress insecure SSL connection warning messages
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 from AppStatus import Node
 
 parser = argparse.ArgumentParser(description='Modify the AppStatus of a deployment node')
@@ -20,7 +24,7 @@ def show_node_status(host):
     line = line + node.get_status()
     line = line + " VERSION:"
     line = line + node.get_version()
-    print line
+    print(line)
 
 
 def set_node_status(host, status, username, password):
@@ -31,7 +35,7 @@ def set_node_status(host, status, username, password):
 
 
 if not args.host:
-    print "No host specified, nothing to do."
+    print ("No host specified, nothing to do.")
 else:
     if not args.status:
         show_node_status(args.host)

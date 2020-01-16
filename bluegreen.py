@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 import argparse
 
+# Suppress insecure SSL connection warning messages
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 from AppStatus import Plan
 
 parser = argparse.ArgumentParser(description='Modify the AppStatus of deployment nodes')
@@ -18,7 +23,7 @@ parser.add_argument("-s", "--status", help="The status to set")
 
 args = parser.parse_args()
 if args.verbose:
-    print "verbosity turned on"
+    print("verbosity turned on")
 
 filename = "plan.json"
 if args.file is not None:
@@ -30,7 +35,7 @@ if args.verbose:
 plan = Plan(filename)
 
 if args.verbose:
-    print "The plan contains " + str(len(plan.nodes)) + " nodes"
+    print("The plan contains " + str(len(plan.nodes)) + " nodes")
 
 if args.action[0] == "status":
     plan.show_current()
