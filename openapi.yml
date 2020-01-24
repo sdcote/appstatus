@@ -1,0 +1,88 @@
+openapi: 3.0.0
+info:
+  title: Application Status API
+  description: "This is an API for managing BlueGreen deployments at AEP using the F5 Local Traffic Manager (LTM)."
+  version: 1.0.0
+servers:
+  - url: https://selfserv20347.drct.bluegreen.aepsc.com/api/
+    description: SelfServ20347
+  - url: https://selfserv20367.drct.bluegreen.aepsc.com/api/
+    description: SelfServ20367
+  - url: https://selfserv20368.drct.bluegreen.aepsc.com/api/
+    description: SelfServ20368
+  - url: http://bluegreen.aepsc.com/api/
+    description: Test this out on the ready (production) servers
+  - url: http://stage.bluegreen.aepsc.com/api/
+    description: Test this out on the staging servers
+
+paths:
+  /appstatus:
+    get:
+      summary: "Retrieve the status of your application"
+      description: "This is the primary endpoint for the F5 to retrieve the status of your application to determine what traffic, if any, should be sent to your application. This is also used by automated deployment to determine if the latest application can be staged to this instance."
+      responses:
+        200:
+          description: The status of the application
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusOut'
+              example:
+                status: "stand-by"
+                version: "1.3.6"
+                hostname: "SelfServ20367.aepsc.com"
+
+    post:
+      summary: "Update the current status of the application"
+      description: "This set the status of the application to change its disposition for receiving traffic."
+      requestBody:
+        description: The desired status to set. **Note** only the status field is supported.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusIn'
+            example:
+              status: "stage"
+      responses:
+        200:
+          description: Status Sucessfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusOut'
+              example:
+                status: "stage"
+
+components:
+  parameters:
+    statusParam:
+      in: query
+      description: The status of the applcation on this host:port instance.
+      required: true
+      name: status
+      schema:
+        type: string
+        enum:
+          - ready
+          - stage
+          - stand-by
+  schemas:
+    StatusOut:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/parameters/statusParam'
+        version:
+          type: string
+        hostname:
+          type: string
+    StatusIn:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/parameters/statusParam'
